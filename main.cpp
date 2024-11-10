@@ -28,8 +28,6 @@ bool multiplyMatrices(double** A, int A_rows, int A_cols,
     result = new double*[A_rows];
     for (int i = 0; i < A_rows; ++i) {
         result[i] = new double[B_cols];
-    }
-    for (int i = 0; i < A_rows; ++i) {
         for (int j = 0; j < B_cols; ++j) {
             result[i][j] = 0;
             for (int k = 0; k < A_cols; ++k) {
@@ -65,6 +63,9 @@ bool powerMatrix(double** A, int N, int exp, double**& result) {
             for (int j = 0; j < N; ++j) {
                 result[i][j] = temp[i][j];
             }
+        }
+        for(int k = 0; k < N; ++k){
+            delete[] temp[k];
         }
         delete[] temp;
     }
