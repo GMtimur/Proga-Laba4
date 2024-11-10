@@ -1,12 +1,8 @@
 #include <iostream>
-#include <cstring>
 
 using namespace std;
 
-const int MAX_N = 100;
-const int MAX_M = 100;
-
-void inputMatrix(double matrix[MAX_N][MAX_M], int rows, int cols) {
+void inputMatrix(double** matrix, int rows, int cols) {
     for (int i = 0; i < rows; ++i) {
         for (int j = 0; j < cols; ++j) {
             cin >> matrix[i][j];
@@ -14,7 +10,7 @@ void inputMatrix(double matrix[MAX_N][MAX_M], int rows, int cols) {
     }
 }
 
-void printMatrix(double matrix[MAX_N][MAX_M], int rows, int cols) {
+void printMatrix(double** matrix, int rows, int cols) {
     for (int i = 0; i < rows; ++i) {
         for (int j = 0; j < cols; ++j) {
             cout << matrix[i][j] << (j < cols - 1 ? " " : "");
@@ -23,12 +19,18 @@ void printMatrix(double matrix[MAX_N][MAX_M], int rows, int cols) {
     }
 }
 
-bool multiplyMatrices(double A[MAX_N][MAX_M], int A_rows, int A_cols, 
-                      double B[MAX_N][MAX_M], int B_rows, int B_cols, 
-                      double result[MAX_N][MAX_M], int &result_rows, int &result_cols) {
+bool multiplyMatrices(double** A, int A_rows, int A_cols,
+                      double** B, int B_rows, int B_cols,
+                      double**& result, int& result_rows, int& result_cols) {
     if (A_cols != B_rows) {
         return false;
     }
+
+    result = new double*[A_rows];
+    for (int i = 0; i < A_rows; ++i) {
+        result[i] = new double[B_cols];
+    }
+
     for (int i = 0; i < A_rows; ++i) {
         for (int j = 0; j < B_cols; ++j) {
             result[i][j] = 0;
@@ -42,16 +44,23 @@ bool multiplyMatrices(double A[MAX_N][MAX_M], int A_rows, int A_cols,
     return true;
 }
 
-bool powerMatrix(double A[MAX_N][MAX_M], int N, int exp, double result[MAX_N][MAX_M]) {
+bool powerMatrix(double** A, int N, int exp, double**& result) {
     if (N <= 0 || exp < 1) {
         return false;
     }
+
+    result = new double*[N];
+    for (int i = 0; i < N; ++i) {
+        result[i] = new double[N];
+    }
+
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
             result[i][j] = A[i][j];
         }
     }
-    double temp[MAX_N][MAX_M];
+
+    double** temp;
     for (int i = 1; i < exp; ++i) {
         if (!multiplyMatrices(result, N, N, A, N, N, temp, N, N)) {
             return false;
@@ -61,10 +70,10 @@ bool powerMatrix(double A[MAX_N][MAX_M], int N, int exp, double result[MAX_N][MA
                 result[i][j] = temp[i][j];
             }
         }
+        delete[] temp;
     }
     return true;
 }
-
 
 int main(int argc, char* argv[]) {
     setlocale(LC_CTYPE, "rus");
@@ -72,7 +81,12 @@ int main(int argc, char* argv[]) {
     int N, M;
     if (isHuman) cout << "Введите числа N и М: " << endl;
     cin >> N >> M;
-    double A1[MAX_N][MAX_M];
+
+    double** A1 = new double*[N];
+    for (int i = 0; i < N; ++i) {
+        A1[i] = new double[M];
+    }
+
     inputMatrix(A1, N, M);
     while (true) {
         int command;
@@ -87,21 +101,37 @@ int main(int argc, char* argv[]) {
             int K;
             if (isHuman) cout << "Введите число К: ";
             cin >> K;
-            double A2[MAX_N][MAX_M];
+
+            // Allocate memory for A2 and result matrices
+            double** A2 = new double*[M];
+            for (int i = 0; i < M; ++i) {
+                A2[i] = new double[K];
+            }
+
             inputMatrix(A2, M, K);
-            double result[MAX_N][MAX_M];
+
+            double** result;
             int result_rows, result_cols;
+
             if (!multiplyMatrices(A1, N, M, A2, M, K, result, result_rows, result_cols)) {
                 cout << (isHuman ? "Матрицы нельзя перемножить!" : "NO") << endl;
             } else {
+                // Update A1 with the result
+                for (int i = 0; i < N; ++i) {
+                    delete[] A1[i];
+                }
+                delete[] A1;
+
                 N = result_rows;
                 M = result_cols;
-                for (int i = 0; i < N; ++i) {
-                    for (int j = 0; j < M; ++j) {
-                        A1[i][j] = result[i][j];
-                    }
-                }
+                A1 = result;
             }
+
+            // Deallocate memory for A2
+            for (int i = 0; i < M; ++i) {
+                delete[] A2[i];
+            }
+            delete[] A2;
         } else if (command == 3) {
             if (N != M) {
                 cout << (isHuman ? "Матрицу нельзя возвести в степень!" : "NO") << endl;
@@ -112,20 +142,28 @@ int main(int argc, char* argv[]) {
             if (isHuman) cout << "Введите степень: ";
             cin >> x;
 
-            double result[MAX_N][MAX_M];
+            double** result;
             if (!powerMatrix(A1, N, x, result)) {
                 cout << (isHuman ? "Матрицу нельзя возвести в степень!" : "NO") << endl;
             } else {
+                // Update A1 with the result
                 for (int i = 0; i < N; ++i) {
-                    for (int j = 0; j < N; ++j) {
-                        A1[i][j] = result[i][j];
-                    }
+                    delete[] A1[i];
                 }
+                delete[] A1;
+
+                A1 = result;
             }
         } else {
             cout << (isHuman ? "Некорректная команда. Попробуйте снова." : "NO") << endl;
         }
     }
+
+    // Deallocate memory for A1
+    for (int i = 0; i < N; ++i) {
+        delete[] A1[i];
+    }
+    delete[] A1;
 
     return 0;
 }
