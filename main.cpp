@@ -25,12 +25,10 @@ bool multiplyMatrices(double** A, int A_rows, int A_cols,
     if (A_cols != B_rows) {
         return false;
     }
-
     result = new double*[A_rows];
     for (int i = 0; i < A_rows; ++i) {
         result[i] = new double[B_cols];
     }
-
     for (int i = 0; i < A_rows; ++i) {
         for (int j = 0; j < B_cols; ++j) {
             result[i][j] = 0;
@@ -48,12 +46,10 @@ bool powerMatrix(double** A, int N, int exp, double**& result) {
     if (N <= 0 || exp < 1) {
         return false;
     }
-
     result = new double*[N];
     for (int i = 0; i < N; ++i) {
         result[i] = new double[N];
     }
-
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
             result[i][j] = A[i][j];
@@ -81,16 +77,14 @@ int main(int argc, char* argv[]) {
     int N, M;
     if (isHuman) cout << "Введите числа N и М: " << endl;
     cin >> N >> M;
-
     double** A1 = new double*[N];
     for (int i = 0; i < N; ++i) {
         A1[i] = new double[M];
     }
-
     inputMatrix(A1, N, M);
     while (true) {
         int command;
-        if (isHuman) cout << "Введите номер команды (1, 2, 3): ";
+        if (isHuman) cout << "Введите номер команды (0, 1, 2, 3): ";
         cin >> command;
         if (command == 0) {
             break;
@@ -101,22 +95,16 @@ int main(int argc, char* argv[]) {
             int K;
             if (isHuman) cout << "Введите число К: ";
             cin >> K;
-
-            // Allocate memory for A2 and result matrices
             double** A2 = new double*[M];
             for (int i = 0; i < M; ++i) {
                 A2[i] = new double[K];
             }
-
             inputMatrix(A2, M, K);
-
             double** result;
             int result_rows, result_cols;
-
             if (!multiplyMatrices(A1, N, M, A2, M, K, result, result_rows, result_cols)) {
                 cout << (isHuman ? "Матрицы нельзя перемножить!" : "NO") << endl;
             } else {
-                // Update A1 with the result
                 for (int i = 0; i < N; ++i) {
                     delete[] A1[i];
                 }
@@ -126,8 +114,6 @@ int main(int argc, char* argv[]) {
                 M = result_cols;
                 A1 = result;
             }
-
-            // Deallocate memory for A2
             for (int i = 0; i < M; ++i) {
                 delete[] A2[i];
             }
@@ -137,16 +123,13 @@ int main(int argc, char* argv[]) {
                 cout << (isHuman ? "Матрицу нельзя возвести в степень!" : "NO") << endl;
                 continue;
             }
-
             int x;
             if (isHuman) cout << "Введите степень: ";
             cin >> x;
-
             double** result;
             if (!powerMatrix(A1, N, x, result)) {
                 cout << (isHuman ? "Матрицу нельзя возвести в степень!" : "NO") << endl;
             } else {
-                // Update A1 with the result
                 for (int i = 0; i < N; ++i) {
                     delete[] A1[i];
                 }
@@ -158,8 +141,6 @@ int main(int argc, char* argv[]) {
             cout << (isHuman ? "Некорректная команда. Попробуйте снова." : "NO") << endl;
         }
     }
-
-    // Deallocate memory for A1
     for (int i = 0; i < N; ++i) {
         delete[] A1[i];
     }
